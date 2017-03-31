@@ -17,7 +17,7 @@ export default class Rekkid extends Component {
     return (
       <View style={styles.container}>
         <Text style={styles.welcome}>
-          Welcome to React Native!
+          REKKID IS HERE!
         </Text>
         <Text style={styles.instructions}>
           To get started, edit index.ios.js
