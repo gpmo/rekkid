@@ -9,8 +9,8 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TouchableHighlight,
   WebView,
+  TouchableOpacity,
   View
 } from 'react-native';
 import Camera from 'react-native-camera';
@@ -123,18 +123,18 @@ class CameraView extends Component {
 
   render() {
     return (
-      <View style={styles.container}>
-        <Camera
-          ref={(cam) => {
-            this.camera = cam;
-          }}
-          style={styles.preview}
-          aspect={Camera.constants.Aspect.fill}>
-          <Text style={styles.capture} onPress={this.takePicture.bind(this)}>
-            [CAPTURE]
-          </Text>
-        </Camera>
-      </View>
+        <View style = {styles.container}>
+          <Camera
+            ref={(cam) => {
+              this.camera = cam;
+            }}
+            style={styles.preview}
+            aspect={Camera.constants.Aspect.fill}>
+          </Camera>
+          <TouchableOpacity style={styles.capture}
+          onPress={this.takePicture.bind(this)}>
+          </TouchableOpacity>
+        </View>
     );
   }
 }
@@ -266,7 +266,7 @@ class RecordTracklistView extends Component {
         {this.props.tracklist.map((track, arrIndex) => {
           return (
             <View key={arrIndex} style={styles.trackInfoWrapper}>
-              <Text style = {styles.trackText}>
+              <Text style = {styles.trackPosText}>
                 {track.position}
               </Text>
               <Text style = {styles.trackText}>
@@ -303,20 +303,26 @@ const dummyData = {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    flexDirection: 'row'
+    flexDirection: 'column',
+    backgroundColor: '#1f1f1f',
   },
   preview: {
     flex: 1,
-    justifyContent: 'flex-end',
-    alignItems: 'center'
+    alignSelf: 'center',
+    position:'absolute',
+    width:300,
+    height:300,
+    borderRadius:150,
+    marginTop:125,
   },
   capture: {
-    flex: 0,
-    backgroundColor: '#fff',
-    borderRadius: 5,
-    color: '#000',
-    padding: 10,
-    margin: 40
+    position:'absolute',
+    backgroundColor: 'white',
+    borderRadius: 50,
+    width: 50,
+    height: 50,
+    marginTop: 600,
+    alignSelf: 'center',
   },
   welcome: {
     fontSize: 20,
@@ -415,6 +421,13 @@ const styles = StyleSheet.create({
     fontSize: 15,
     textAlign: 'center',
     color: '#ffffff',
+    fontFamily: 'Helvetica-Bold',
+  },
+  trackPosText:{
+    padding:10,
+    fontSize: 15,
+    textAlign: 'center',
+    color: '#6f6c6c',
     fontFamily: 'Helvetica-Bold',
   },
 });
