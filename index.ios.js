@@ -16,6 +16,77 @@ import {
   View
 } from 'react-native';
 
+const dummyData = {
+  artistName: 'SOICHI TERADA',
+  recordTitle: 'FAR EAST RECORDINGS 2',
+  label: 'FAR EAST RECORDING',
+  year: '1993',
+  catNumber: 'FER-06867',
+  country: 'JAPAN',
+  genres: ['ELECTRONIC', 'HOUSE', 'DOWNTEMPO'],
+  albumArt: {uri: 'https://img.discogs.com/U6hp6dszbIbVhiuZiglnZ-mx_44=/fit-in/600x600/filters:strip_icc():format(jpeg):mode_rgb():quality(90)/discogs-images/R-1115377-1372077464-8414.jpeg.jpg'},
+  tracklist: [
+    {duration: "8:13", position: "A1", type_: "track", title: "Good Times"},
+    {duration: "6:08", position: "A2", type_: "track", title: "A Warm Summer Night"},
+    {duration: "6:46", position: "A3", type_: "track", title: "My Feet Keep Dancing"},
+    {duration: "4:42", position: "B1", type_: "track", title: "My Forbidden Lover"},
+    {duration: "2:55", position: "B2", type_: "track", title: "Can't Stand To Love You"},
+    {duration: "4:05", position: "B3", type_: "track", title: "Will You Cry (When You Hear This Song)"},
+    {duration: "4:10", position: "B4", type_: "track", title: "What About Me"}
+  ],
+};
+
+// fetch('https://api.discogs.com/releases/249504', {
+//   method: 'GET',
+//   headers: {
+//     'Authorization': 'Discogs key=bWKHfQaBHYvrwvSpYjzm, secret=yoyZnCsHFDmBWWRcWNXNZGwJsJHTMUMm',
+//   }
+// })
+// .then((response) => response.json())
+// .then((responseJson) => {
+//   console.log(responseJson);
+// })
+// .catch((error) => {
+//   console.error(error);
+// });
+function parseRecordData(recordJSON){
+  let recordData = {
+    artistName: recordJSON.artists[0].name.toUpperCase(),
+    recordTitle: recordJSON.title.toUpperCase(),
+    label: recordJSON.labels[0].name.toUpperCase(),
+    year: recordJSON.released_formatted.toUpperCase(),
+    catNumber: recordJSON.labels[0].catno,
+    country: recordJSON.country,
+    genres: recordJSON.genres.map(function(x) { return x.toUpperCase() }),
+    albumArt: {uri: recordJSON.images[0].uri},
+    tracklist: recordJSON.tracklist,
+  }
+  return recordData;
+};
+
+function getRecordByID(release_id) {
+  let curr = 'USD';
+  let url = 'https://api.discogs.com/releases/' + release_id + '?curr_abbr=' + curr;
+  console.log('url= ' + url);
+  let options = {
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+      'User-Agent': 'Rekkid Discogs App',
+    },
+  };
+  fetch(url, options)
+    .then((response) => response.json())
+    .then((responseJson) => {
+      // console.log('JSON = ' + responseJson.title);
+      let recordData = parseRecordData(responseJson);
+      this.setState({ recordData: recordData });
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+  // return responseObject;
+}
 
 export default class Rekkid extends Component {
   render() {
@@ -26,17 +97,54 @@ export default class Rekkid extends Component {
 }
 
 class RecordView extends Component {
+  constructor() {
+    super();
+    this.state = {recordData: dummyData}; // default text
+
+    let release_id = 249504;
+    let curr = 'USD';
+    let url = 'https://api.discogs.com/releases/' + release_id + '?curr_abbr=' + curr;
+    console.log('url= ' + url);
+    let options = {
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'User-Agent': 'Rekkid Discogs App',
+      },
+    };
+    fetch(url, options)
+      .then((response) => response.json())
+      .then((responseJson) => {
+        // console.log('JSON = ' + responseJson.title);
+        let recordData = parseRecordData(responseJson);
+        this.setState({ recordData: recordData });
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+
+  }
   render() {
+    const { recordData } = this.state;
     return (
         <View style={{
           flex: 1,
           flexDirection: 'column',
+          backgroundColor: '#1f1f1f',
         }}>
-          <RecordTitleView/>
-          <RecordImageView/>
-          <RecordPriceView/>
+          <RecordTitleView
+            artistName={recordData.artistName}
+            recordTitle={recordData.recordTitle}
+            label={recordData.label}
+            catNumber={recordData.catNumber}
+            country={recordData.country}
+            year={recordData.year}
+            genres={recordData.genres}
+          />
+          <RecordImageView albumArt={recordData.albumArt}/>
+          <RecordPriceView />
           <ScrollView style = {{flex:1.0}}>
-          <RecordTracklistView/>
+          <RecordTracklistView tracklist={recordData.tracklist}/>
           </ScrollView>
           <RecordPlayView style ={{flex:0.1}}/>
       </View>
@@ -46,19 +154,29 @@ class RecordView extends Component {
 
 class RecordTitleView extends Component {
   render() {
+    const {
+      recordTitle,
+      label,
+      catNumber,
+      country,
+      year,
+      genres,
+      artistName
+    } = this.props;
+
     return (
       <View style={{flex:0.5, paddingTop: 25,backgroundColor: '#1f1f1f'}}>
         <Text style={styles.artistName}>
-          SOICHI TERADA
+          {artistName}
         </Text>
         <Text style={styles.albumName}>
-          FAR EAST RECORDINGS 2
+          {recordTitle}
         </Text>
         <Text style={styles.albumInfo}>
-          FAR EAST RECORDING FER-06867 JAPAN, 1993
+          {label + ' ' + catNumber + ' ' + country + ', ' + year}
         </Text>
         <Text style={styles.genreInfo}>
-          ELECTRONIC: HOUSE, DOWNTEMPO
+          {genres.join(', ')}
         </Text>
       </View>
     );
@@ -71,7 +189,7 @@ class RecordImageView extends Component {
       <View style={styles.albumArtWrapper}>
       <Image
         style={styles.albumArt}
-        source={{uri: 'https://img.discogs.com/U6hp6dszbIbVhiuZiglnZ-mx_44=/fit-in/600x600/filters:strip_icc():format(jpeg):mode_rgb():quality(90)/discogs-images/R-1115377-1372077464-8414.jpeg.jpg'}}
+        source={this.props.albumArt}
       />
       </View>
     );
@@ -127,55 +245,19 @@ class RecordPriceView extends Component {
 class RecordTracklistView extends Component {
   render() {
     return (
-      <View style={{flex:0.50, backgroundColor: '#1f1f1f'}}>
-        <View style={styles.trackInfoWrapper}>
-          <Text style = {styles.trackText}>
-            A1
-          </Text>
-          <Text style = {styles.trackText}>
-            I WANNA BE WITH YOU
-          </Text>
-        </View>
-        <View style={styles.trackInfoWrapper}>
-          <Text style = {styles.trackText}>
-            A2
-          </Text>
-          <Text style = {styles.trackText}>
-            I WANNA BE WITH YOU
-          </Text>
-        </View>
-        <View style={styles.trackInfoWrapper}>
-          <Text style = {styles.trackText}>
-            A3
-          </Text>
-          <Text style = {styles.trackText}>
-            I WANNA BE WITH YOU
-          </Text>
-        </View>
-        <View style={styles.trackInfoWrapper}>
-          <Text style = {styles.trackText}>
-            A4
-          </Text>
-          <Text style = {styles.trackText}>
-            I WANNA BE WITH YOU
-          </Text>
-        </View>
-        <View style={styles.trackInfoWrapper}>
-          <Text style = {styles.trackText}>
-            B1
-          </Text>
-          <Text style = {styles.trackText}>
-            I WANNA BE WITH YOU
-          </Text>
-        </View>
-        <View style={styles.trackInfoWrapper}>
-          <Text style = {styles.trackText}>
-            B2
-          </Text>
-          <Text style = {styles.trackText}>
-            I WANNA BE WITH YOU
-          </Text>
-        </View>
+      <View style={{flex:0.50, backgroundColor: '#1f1f1f'}} >
+        {this.props.tracklist.map((track, arrIndex) => {
+          return (
+            <View key={arrIndex} style={styles.trackInfoWrapper}>
+              <Text style = {styles.trackText}>
+                {track.position}
+              </Text>
+              <Text style = {styles.trackText}>
+                {track.title.toUpperCase()}
+              </Text>
+            </View>
+          );
+        })}
       </View>
     );
   }
