@@ -96,11 +96,24 @@ export default class Rekkid extends Component {
   }
 }
 
+function getOauth() {
+  let consumer_key = 'bWKHfQaBHYvrwvSpYjzm';
+  let consumer_secret = 'yoyZnCsHFDmBWWRcWNXNZGwJsJHTMUMm';
+
+  let request_token_url = 'https://api.discogs.com/oauth/request_token';
+  let authorize_url = 'https://www.discogs.com/oauth/authorize';
+  let access_token_url = 'https://api.discogs.com/oauth/access_token';
+
+  let user_agent = 'Rekkid Discogs App';
+
+}
+
 class RecordView extends Component {
   constructor() {
     super();
     this.state = {recordData: dummyData}; // default text
 
+    //Release JSON fetch
     let release_id = 249504;
     let curr = 'USD';
     let url = 'https://api.discogs.com/releases/' + release_id + '?curr_abbr=' + curr;
