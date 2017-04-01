@@ -48,7 +48,7 @@ class CameraView extends Component {
   navRecordView(imageData) {
     this.props.navigator.push({
       id: 'recordView',
-      data: imageData
+      data: JSON.stringify(imageData)
     })
   };
 
@@ -57,13 +57,38 @@ class CameraView extends Component {
     //options.location = ...
     this.camera.capture({metadata: options})
       .then((data) => {
+        // encode image in base64
         RNFetchBlob.fs.readFile(data.path, "base64")
           .then((encodedImage) => {
-            console.log("encoded image" + encodedImage);
-            this.navRecordView(encodedImage);
+            this.detectTextInImage(encodedImage);
           });
       }).catch(err => console.error(err));
   };
+
+  detectTextInImage(encodedImage) {
+    fetch('https://vision.googleapis.com/v1/images:annotate?key=AIzaSyCdAKRx53A14lEPgvv4oFEAbVYc7DVY3g4', {
+      method: 'POST',
+      body: JSON.stringify({
+        "requests": [
+          {
+            "image": {
+              "content": encodedImage
+            },
+            "features": [
+              {
+                "type": "TEXT_DETECTION"
+              }
+            ]
+          }
+        ]
+      }),
+    })
+    .then((response) => response.json())
+    .then((responseJson) => {
+        console.log(responseJson);
+        this.navRecordView(responseJson);
+    })
+  }
 
   render() {
     return (
@@ -82,7 +107,6 @@ class CameraView extends Component {
     );
   }
 }
-//const pictureData = takePicture.bind(this);
 
 const styles = StyleSheet.create({
   container: {
